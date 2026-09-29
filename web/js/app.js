@@ -12,8 +12,8 @@
 // (Settings → onglet "Releases" de ton repo → uploader les 2 fichiers
 // générés par export_onnx.py comme "assets" de la release)
 // ─────────────────────────────────────────────────────────────
-const MODEL_URL = "https://github.com/TON-USERNAME/TON-REPO/releases/download/v1.0/solarlens_web.onnx";
-const LABELS_URL = "https://github.com/TON-USERNAME/TON-REPO/releases/download/v1.0/solarlens_web_labels.json";
+const MODEL_URL = "https://github.com/Sanaenajimi/Solarlens/releases/download/v1.0/solarlens_web.onnx";
+const LABELS_URL = "https://github.com/Sanaenajimi/Solarlens/releases/download/v1.0/solarlens_web_labels.json";
 
 // Fallback si le JSON des labels n'a pas pu être chargé
 const FALLBACK_CLASS_NAMES = [

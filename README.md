@@ -61,5 +61,6 @@ Sur votre repo GitHub → **Releases** → **Create a new release** :
 
 GitHub vous donne une URL stable du type :
 ```
-https://github.com/TON-USERNAME/solarlens/releases/download/v1.0/solarlens_web.onnx que vous devez utiliser pour remplacez les urls dans js/app.js
-```
+https://github.com/TON-USERNAME/solarlens/releases/download/v1.0/solarlens_web.onnx 
+que vous devez utiliser pour remplacez les urls dans js/app.js
+

@@ -22,7 +22,7 @@
         </svg>
         SolarLens
     </div>
-    <a href="https://github.com/TON-USERNAME/solarlens" class="btn btn-outline" target="_blank" rel="noopener">
+    <a href="https://github.com/Sanaenajimi/Solarlens" class="btn btn-outline" target="_blank" rel="noopener">
         Code source ↗
     </a>
 </div>
@@ -49,28 +49,29 @@
 <div id="page-story" class="page active">
 
     <div class="hero-container">
-    <div class="hero-intro">
-        <div class="hero-eyebrow">Une histoire, un toit</div>
-        <h1 class="hero-title">Votre toit <span class="text-gradient-accent">produit</span>.<br>Jusqu'à ce qu'un panneau s'arrête.</h1>
-    </div>
+        <div class="hero-intro">
+            <div class="hero-eyebrow">Une histoire, un toit</div>
+            <h1 class="hero-title">Votre toit <span class="text-gradient-accent">produit</span>.<br>Jusqu'à ce qu'un panneau s'arrête.</h1>
+        </div>
 
-    <div class="hero-columns">
-        <p class="hero-sub">
-            Faites défiler pour comprendre ce qui se passe — et comment une seule photo
-            suffit à tout révéler, en mots que vous comprenez.
-        </p>
-        <div class="hero-image-wrap">
-            <img src="assets/house-3d.png" class="hero-image animate-float-soft" alt="Maison moderne avec panneaux solaires sur le toit">
-            <div class="hero-badge hero-badge-tl">
-                <div class="hero-badge-value">6,5 kW</div>
-                <div class="hero-badge-label">Production actuelle</div>
-            </div>
-            <div class="hero-badge hero-badge-br">
-                <div class="hero-badge-value">94 %</div>
-                <div class="hero-badge-label">Autonomie aujourd'hui</div>
+        <div class="hero-columns">
+            <p class="hero-sub">
+                Faites défiler pour comprendre ce qui se passe — et comment une seule photo
+                suffit à tout révéler, en mots que vous comprenez.
+            </p>
+            <div class="hero-image-wrap">
+                <img src="assets/house-3d.png" class="hero-image animate-float-soft" alt="Maison moderne avec panneaux solaires sur le toit">
+                <div class="hero-badge hero-badge-tl">
+                    <div class="hero-badge-value">6,5 kW</div>
+                    <div class="hero-badge-label">Production actuelle</div>
+                </div>
+                <div class="hero-badge hero-badge-br">
+                    <div class="hero-badge-value">94 %</div>
+                    <div class="hero-badge-label">Autonomie aujourd'hui</div>
+                </div>
             </div>
         </div>
-    </div>
+
         <div style="text-align:center; margin-top:32px; color:var(--muted-foreground); font-size:24px;">
             <span class="animate-bounce-slow" style="display:inline-block;">⌄</span>
         </div>
@@ -243,9 +244,9 @@
 
         <div class="lab-grid" style="margin-top:24px;">
             <div class="lab-metric">
-                <div class="lab-metric-label">PRÉCISION TEST</div>
-                <div class="lab-metric-value">98,9 %</div>
-                <div class="lab-metric-sub">sur l'ensemble de test</div>
+                <div class="lab-metric-label">PRÉCISION VALIDATION</div>
+                <div class="lab-metric-value">85,2 %</div>
+                <div class="lab-metric-sub">sur l'ensemble de validation</div>
             </div>
             <div class="lab-metric">
                 <div class="lab-metric-label">CLASSES</div>
@@ -274,7 +275,7 @@
 Softmax sur 6 classes</div>
 
         <h3 style="margin-top:32px; margin-bottom:12px; font-size:16px; font-weight:600;">Pipeline de déploiement</h3>
-        <div class="arch-block">PyTorch (.pth) → export ONNX (opset 17) → Hugging Face Hub<br>
+        <div class="arch-block">PyTorch (.pth) → export ONNX (opset 17) → GitHub Release<br>
 &nbsp;&nbsp;↓<br>
 Navigateur : fetch() du modèle → ONNX Runtime Web (WASM) → inférence locale<br>
 &nbsp;&nbsp;↓<br>

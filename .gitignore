@@ -1,0 +1,43 @@
+# ─── Python ───────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.pytest_cache/
+
+# ─── Environnements virtuels ──────────────
+venv/
+env/
+.venv/
+ENV/
+
+# ─── Modèles entraînés (trop gros pour Git) ─
+# Ces fichiers vivent sur Hugging Face Hub, pas sur GitHub
+checkpoints/*.pth
+checkpoints/*.onnx
+checkpoints/*.onnx.data
+checkpoints/training_history.json
+
+# ─── Dataset (à télécharger depuis Kaggle) ─
+data/
+*.zip
+
+# ─── IDE et OS ────────────────────────────
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# ─── Streamlit local ──────────────────────
+.streamlit/secrets.toml
+
+# ─── Notebooks Jupyter ────────────────────
+.ipynb_checkpoints/
+
+# ─── Logs et outputs ──────────────────────
+*.log
+outputs/
+runs/

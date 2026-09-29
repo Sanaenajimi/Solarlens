@@ -1,8 +1,8 @@
 """
 ╔══════════════════════════════════════════════════════════════╗
-║  SolarLens — Voyez vos panneaux solaires comme l'IA les voit          ║
-║  Author: Sanae Najimi                                       ║
-║  Design : chrome / silver studio, accent menthe-teal        ║
+║  SolarLens   ║
+║  Author: Sanae Najimi                                        ║
+║                                                              ║
 ╚══════════════════════════════════════════════════════════════╝
 """
 

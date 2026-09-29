@@ -1,12 +1,7 @@
-# ☀️ SolarLens — Projet complet (reconstitué)
+# ☀️ SolarLens
 
 Ce zip contient **tout le code** du projet : entraînement du modèle,
 app Streamlit de démo, et version web statique pour GitHub Pages.
-
-⚠️ **Ce qui manque** (normal, ça ne se transmet pas dans un zip de code) :
-le modèle déjà entraîné (`checkpoints/solarlens_best.pth`). Il faut
-ré-entraîner — mais avec un GPU gratuit (Google Colab), ça prend
-15-20 minutes, pas des heures.
 
 ## 📁 Contenu
 
@@ -56,33 +51,8 @@ SolarLens_complet/
 ```bash
 pip install -r requirements.txt
 streamlit run app.py
-```
-
-## 🌐 Étape 3 — Déployer la version web sur GitHub Pages
-
-Le dossier `web/` est déjà prêt (design chrome/silver, 4 onglets, caméra live,
-inférence 100% dans le navigateur via ONNX Runtime Web).
-
-### 3a. Exporter le modèle entraîné en ONNX
-
-```bash
-python export_onnx.py --checkpoint checkpoints/solarlens_best.pth --output checkpoints/solarlens_web.onnx
-```
-Ça produit `solarlens_web.onnx` (~100 Mo) et `solarlens_web_labels.json`.
-
-### 3b. Pousser `web/` sur un repo GitHub
-
-```bash
-cd web
-git init
-git add .
-git commit -m "SolarLens web"
-git branch -M main
-git remote add origin https://github.com/TON-USERNAME/solarlens.git
-git push -u origin main
-```
-
-### 3c. Créer une GitHub Release avec le modèle attaché
+``
+###  Créer une GitHub Release avec le modèle attaché
 
 Sur ton repo GitHub → **Releases** → **Create a new release** :
 - Tag : `v1.0`

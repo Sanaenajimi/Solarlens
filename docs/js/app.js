@@ -1,19 +1,13 @@
 /**
  * SolarLens — Inference client-side avec ONNX Runtime Web.
  *
- * Aucun serveur : le modèle ResNet-50 + SE (exporté en ONNX) est
- * téléchargé depuis Hugging Face Hub puis exécuté directement dans
- * le navigateur via WebAssembly. Les images de l'utilisateur ne
- * quittent jamais son appareil.
+ * Aucun serveur : le modèle ResNet-50 + SE (exporté en ONNX) est téléchargé depuis Hugging Face Hub puis exécuté directement dans
+ * le navigateur via WebAssembly. Les images de l'utilisateur ne quittent jamais son appareil.
  */
 
 // ─────────────────────────────────────────────────────────────
-// CONFIGURATION — remplace par l'URL de ta GitHub Release
-// (Settings → onglet "Releases" de ton repo → uploader les 2 fichiers
-// générés par export_onnx.py comme "assets" de la release)
-// ─────────────────────────────────────────────────────────────
-const MODEL_URL = "https://github.com/Sanaenajimi/Solarlens/releases/download/v1.0/solarlens_web.onnx";
-const LABELS_URL = "https://github.com/Sanaenajimi/Solarlens/releases/download/v1.0/solarlens_web_labels.json";
+const MODEL_URL = "model/solarlens_web.onnx";
+const LABELS_URL = "model/solarlens_web_labels.json";
 
 // Fallback si le JSON des labels n'a pas pu être chargé
 const FALLBACK_CLASS_NAMES = [
@@ -21,7 +15,7 @@ const FALLBACK_CLASS_NAMES = [
     "Electrical-damage", "Physical-Damage", "Snow-Covered"
 ];
 
-// Normalisation ImageNet (doit être identique à l'entraînement PyTorch)
+// Normalisation ImageNet 
 const IMAGENET_MEAN = [0.485, 0.456, 0.406];
 const IMAGENET_STD = [0.229, 0.224, 0.225];
 const INPUT_SIZE = 224;

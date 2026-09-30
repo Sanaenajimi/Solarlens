@@ -1,10 +1,16 @@
 /**
  * SolarLens — Inference client-side avec ONNX Runtime Web.
  *
- * Aucun serveur : le modèle ResNet-50 + SE (exporté en ONNX) est téléchargé depuis Hugging Face Hub puis exécuté directement dans
- * le navigateur via WebAssembly. Les images de l'utilisateur ne quittent jamais ason appareil.
+ * Aucun serveur : le modèle ResNet-50 + SE (exporté en ONNX) est chargé
+ * directement depuis ce repo (dossier model/) puis exécuté dans le
+ * navigateur via WebAssembly. Les images de l'utilisateur ne quittent
+ * jamais son appareil.
  */
 
+// ─────────────────────────────────────────────────────────────
+// CONFIGURATION — chemins relatifs vers le modèle dans ce repo
+// (hébergé directement dans le repo, pas de GitHub Release : les
+// Releases bloquent le fetch() cross-origin via CORS)
 // ─────────────────────────────────────────────────────────────
 const MODEL_URL = "model/solarlens_web.onnx";
 const LABELS_URL = "model/solarlens_web_labels.json";
@@ -15,13 +21,18 @@ const FALLBACK_CLASS_NAMES = [
     "Electrical-damage", "Physical-Damage", "Snow-Covered"
 ];
 
-// Normalisation ImageNet 
+// Normalisation ImageNet (doit être identique à l'entraînement PyTorch)
 const IMAGENET_MEAN = [0.485, 0.456, 0.406];
 const IMAGENET_STD = [0.229, 0.224, 0.225];
 const INPUT_SIZE = 224;
 
+// Seuil de confiance en dessous duquel on n'affiche AUCUN diagnostic,
+// seulement un message d'incertitude. 60% est un bon compromis pour
+// un problème à 6 classes (hasard = 16,7%).
+const CONFIDENCE_THRESHOLD = 60;
+
 // ─────────────────────────────────────────────────────────────
-// COPIE MÉTIER — même contenu que la version Streamlit
+// COPIE MÉTIER — langage clair pour un particulier
 // ─────────────────────────────────────────────────────────────
 const CLASS_COPY = {
     "Clean": {
@@ -84,14 +95,11 @@ async function loadModel() {
     const statusText = document.getElementById("model-status-text");
 
     try {
-        statusText.textContent = "Téléchargement du modèle (~100 Mo)...";
+        statusText.textContent = "Téléchargement du modèle (~95 Mo)...";
 
-        // ONNX Runtime Web : on utilise le backend WASM (fonctionne partout,
-        // pas besoin de WebGPU/WebGL même si c'est plus lent qu'un serveur).
         ort.env.wasm.numThreads = navigator.hardwareConcurrency || 4;
         ort.env.wasm.wasmPaths = "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.19.2/dist/";
 
-        // Charger les labels et le modèle en parallèle
         const [labelsResp, session] = await Promise.all([
             fetch(LABELS_URL).then(r => r.ok ? r.json() : null).catch(() => null),
             ort.InferenceSession.create(MODEL_URL, {
@@ -123,8 +131,7 @@ function enableInferenceUI() {
 }
 
 // ─────────────────────────────────────────────────────────────
-// PRÉTRAITEMENT D'IMAGE — reproduit exactement les transforms PyTorch
-// (Resize 224x224 → ToTensor → Normalize ImageNet)
+// PRÉTRAITEMENT D'IMAGE — reproduit les transforms PyTorch
 // ─────────────────────────────────────────────────────────────
 function preprocessImage(imageElement) {
     const canvas = document.createElement("canvas");
@@ -132,14 +139,11 @@ function preprocessImage(imageElement) {
     canvas.height = INPUT_SIZE;
     const ctx = canvas.getContext("2d");
 
-    // Resize direct à 224x224 (équivalent à transforms.Resize((224,224)) en mode val)
     ctx.drawImage(imageElement, 0, 0, INPUT_SIZE, INPUT_SIZE);
 
     const imageData = ctx.getImageData(0, 0, INPUT_SIZE, INPUT_SIZE);
-    const { data } = imageData; // Uint8ClampedArray RGBA, longueur = 224*224*4
+    const { data } = imageData;
 
-    // Le modèle attend un tenseur CHW (Channel, Height, Width), normalisé.
-    // C'est l'ordre PyTorch standard, différent de l'ordre HWC du canvas.
     const chw = new Float32Array(3 * INPUT_SIZE * INPUT_SIZE);
     const pixelCount = INPUT_SIZE * INPUT_SIZE;
 
@@ -148,10 +152,9 @@ function preprocessImage(imageElement) {
         const g = data[i * 4 + 1] / 255;
         const b = data[i * 4 + 2] / 255;
 
-        // Normalisation ImageNet : (valeur - mean) / std, canal par canal
-        chw[i] = (r - IMAGENET_MEAN[0]) / IMAGENET_STD[0];                    // canal R
-        chw[pixelCount + i] = (g - IMAGENET_MEAN[1]) / IMAGENET_STD[1];       // canal G
-        chw[2 * pixelCount + i] = (b - IMAGENET_MEAN[2]) / IMAGENET_STD[2];   // canal B
+        chw[i] = (r - IMAGENET_MEAN[0]) / IMAGENET_STD[0];
+        chw[pixelCount + i] = (g - IMAGENET_MEAN[1]) / IMAGENET_STD[1];
+        chw[2 * pixelCount + i] = (b - IMAGENET_MEAN[2]) / IMAGENET_STD[2];
     }
 
     return new ort.Tensor("float32", chw, [1, 3, INPUT_SIZE, INPUT_SIZE]);
@@ -169,9 +172,6 @@ async function runInference(imageElement) {
     const feeds = { image: inputTensor };
     const results = await ortSession.run(feeds);
 
-    // Le graphe ONNX exporté inclut déjà le softmax (voir export_onnx.py),
-    // donc results.probabilities contient directement des probabilités
-    // entre 0 et 1 qui somment à 1 — pas besoin de softmax en JS.
     const outputName = ortSession.outputNames[0];
     const probs = Array.from(results[outputName].data);
 
@@ -188,9 +188,90 @@ async function runInference(imageElement) {
 }
 
 // ─────────────────────────────────────────────────────────────
-// RENDU DU DIAGNOSTIC (langage clair, couleurs par sévérité)
+// RENDU DU DIAGNOSTIC — avec seuil de confiance
 // ─────────────────────────────────────────────────────────────
- renderDiagnosisCard
+function renderDiagnosisCard(result, containerId) {
+    const container = document.getElementById(containerId);
+
+    // ── Confiance insuffisante → pas de diagnostic ──────────────
+    if (result.confidence < CONFIDENCE_THRESHOLD) {
+        container.innerHTML = `
+            <div class="chapter-card animate-rise-in" style="border-left:6px solid #f59e0b; background:linear-gradient(135deg, rgba(245,158,11,0.08), var(--card));">
+                <div class="diag-header" style="color:#f59e0b;">
+                    <span style="font-size:16px;">⚠</span>
+                    <span>PRÉDICTION INCERTAINE</span>
+                </div>
+                <div class="diag-verdict" style="color:#f59e0b; font-size:24px;">
+                    Confiance insuffisante
+                </div>
+                <div class="diag-meta" style="color:#f59e0b;">
+                    Confiance du modèle : ${result.confidence.toFixed(1)}% (seuil requis : ${CONFIDENCE_THRESHOLD}%)
+                </div>
+                <p class="diag-summary">
+                    L'IA n'est pas suffisamment confiante pour établir un diagnostic fiable sur cette
+                    image. Ce résultat peut refléter un cas hors du domaine d'entraînement (angle
+                    inhabituel, environnement très présent, éclairage difficile, etc.).
+                </p>
+                <div class="diag-advice" style="background:#ffedd5; border-left:3px solid #f59e0b;">
+                    <div class="diag-advice-label" style="color:#ea580c;">CE QUE VOUS POUVEZ FAIRE</div>
+                    <div class="diag-advice-text">
+                        Reprenez une photo frontale du panneau, cadrée de près, en lumière naturelle
+                        diffuse. Si le doute persiste, une inspection humaine est recommandée.
+                    </div>
+                </div>
+            </div>
+        `;
+        return;
+    }
+
+    // ── Confiance suffisante → diagnostic complet ───────────────
+    const copy = CLASS_COPY[result.predClass] || CLASS_COPY["Clean"];
+    const palette = SEVERITY_PALETTE[copy.severity];
+
+    const urgentBadge = copy.severity === "high"
+        ? `<span class="urgent-badge" style="background:${palette.main};">⚡ Urgent</span>`
+        : "";
+    const pulseClass = copy.severity === "high" ? "pulse-alert" : "";
+
+    container.innerHTML = `
+        <div class="chapter-card animate-rise-in ${pulseClass}"
+             style="border-left:6px solid ${palette.border}; background:linear-gradient(135deg, ${palette.bg}, var(--card));">
+            <div class="diag-header" style="color:${palette.main};">
+                <span style="font-size:16px;">${palette.icon}</span>
+                <span>NOTRE DIAGNOSTIC</span>
+            </div>
+            <div class="diag-verdict" style="color:${palette.main};">${copy.label}${urgentBadge}</div>
+            <div class="diag-meta" style="color:${palette.main};">
+                ${copy.severityCopy} · confiance : ${result.confidence.toFixed(1)}%
+            </div>
+            <p class="diag-summary">${copy.summary}</p>
+            <div class="diag-advice" style="background:${palette.chip}; border-left:3px solid ${palette.border};">
+                <div class="diag-advice-label" style="color:${palette.main};">CE QUE VOUS POUVEZ FAIRE</div>
+                <div class="diag-advice-text">${copy.advice}</div>
+            </div>
+        </div>
+    `;
+
+    // Nuance si le modèle hésite entre 2 classes proches, même au-dessus du seuil
+    const sorted = [...result.probs].sort((a, b) => b[1] - a[1]);
+    const gap = sorted[0][1] - sorted[1][1];
+    if (gap < 15) {
+        const warning = document.createElement("div");
+        warning.className = "warning-box orange animate-rise-in";
+        warning.innerHTML = `
+            <span style="font-size:20px;">⚠️</span>
+            <div>
+                <div class="warning-box-title" style="color:#f59e0b;">Deux hypothèses proches</div>
+                <div class="warning-box-text" style="color:#92400e;">
+                    L'IA hésite entre "${sorted[0][0].replace("-", " ")}" et "${sorted[1][0].replace("-", " ")}"
+                    (écart de ${gap.toFixed(1)} points seulement). Le diagnostic ci-dessus reste le plus
+                    probable, mais gardez cette nuance en tête.
+                </div>
+            </div>
+        `;
+        container.prepend(warning);
+    }
+}
 
 function renderProbabilityBars(result, containerId) {
     const container = document.getElementById(containerId);
@@ -329,7 +410,7 @@ function handleFile(file) {
 // ─────────────────────────────────────────────────────────────
 async function startCamera() {
     const video = document.getElementById("camera-video");
-    if (cameraStream) return; // déjà démarrée
+    if (cameraStream) return;
 
     try {
         cameraStream = await navigator.mediaDevices.getUserMedia({

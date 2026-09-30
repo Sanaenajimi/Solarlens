@@ -2,7 +2,7 @@
  * SolarLens — Inference client-side avec ONNX Runtime Web.
  *
  * Aucun serveur : le modèle ResNet-50 + SE (exporté en ONNX) est téléchargé depuis Hugging Face Hub puis exécuté directement dans
- * le navigateur via WebAssembly. Les images de l'utilisateur ne quittent jamais son appareil.
+ * le navigateur via WebAssembly. Les images de l'utilisateur ne quittent jamais ason appareil.
  */
 
 // ─────────────────────────────────────────────────────────────
@@ -190,55 +190,7 @@ async function runInference(imageElement) {
 // ─────────────────────────────────────────────────────────────
 // RENDU DU DIAGNOSTIC (langage clair, couleurs par sévérité)
 // ─────────────────────────────────────────────────────────────
-function renderDiagnosisCard(result, containerId) {
-    const container = document.getElementById(containerId);
-    const copy = CLASS_COPY[result.predClass] || CLASS_COPY["Clean"];
-    const palette = SEVERITY_PALETTE[copy.severity];
-
-    const urgentBadge = copy.severity === "high"
-        ? `<span class="urgent-badge" style="background:${palette.main};">⚡ Urgent</span>`
-        : "";
-    const pulseClass = copy.severity === "high" ? "pulse-alert" : "";
-
-    container.innerHTML = `
-        <div class="chapter-card animate-rise-in ${pulseClass}"
-             style="border-left:6px solid ${palette.border}; background:linear-gradient(135deg, ${palette.bg}, var(--card));">
-            <div class="diag-header" style="color:${palette.main};">
-                <span style="font-size:16px;">${palette.icon}</span>
-                <span>NOTRE DIAGNOSTIC</span>
-            </div>
-            <div class="diag-verdict" style="color:${palette.main};">${copy.label}${urgentBadge}</div>
-            <div class="diag-meta" style="color:${palette.main};">
-                ${copy.severityCopy} · confiance : ${result.confidence.toFixed(1)}%
-            </div>
-            <p class="diag-summary">${copy.summary}</p>
-            <div class="diag-advice" style="background:${palette.chip}; border-left:3px solid ${palette.border};">
-                <div class="diag-advice-label" style="color:${palette.main};">CE QUE VOUS POUVEZ FAIRE</div>
-                <div class="diag-advice-text">${copy.advice}</div>
-            </div>
-        </div>
-    `;
-
-    // Alerte "prédiction incertaine" si le modèle hésite entre 2 classes
-    const sorted = [...result.probs].sort((a, b) => b[1] - a[1]);
-    const gap = sorted[0][1] - sorted[1][1];
-    if (result.confidence < 85 || gap < 15) {
-        const warning = document.createElement("div");
-        warning.className = "warning-box orange animate-rise-in";
-        warning.innerHTML = `
-            <span style="font-size:20px;">⚠️</span>
-            <div>
-                <div class="warning-box-title" style="color:#f59e0b;">Prédiction incertaine</div>
-                <div class="warning-box-text" style="color:#92400e;">
-                    L'IA n'est pas hautement confiante sur ce diagnostic. Ce résultat peut refléter
-                    un cas hors du domaine d'entraînement (angle inhabituel, environnement très présent, etc.).
-                    <span style="color:var(--muted-foreground);">Une inspection humaine est recommandée pour confirmation.</span>
-                </div>
-            </div>
-        `;
-        container.prepend(warning);
-    }
-}
+ renderDiagnosisCard
 
 function renderProbabilityBars(result, containerId) {
     const container = document.getElementById(containerId);

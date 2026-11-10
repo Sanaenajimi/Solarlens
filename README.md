@@ -1,9 +1,9 @@
-# ☀️ SolarLens
+#  SolarLens
 
 Ce zip contient **tout le code** du projet : entraînement du modèle,
 app Streamlit de démo, et version web statique pour GitHub Pages.
 
-## 📁 Contenu
+##  Contenu
 
 ```
 SolarLens_complet/
@@ -24,7 +24,7 @@ SolarLens_complet/
     └── assets/
 ```
 ## Comment Refaire le projet par vous même ?
-## 🚀 Étape 1 — Ré-entraîner le modèle (Google Colab, GPU gratuit)
+##  Étape 1 — Ré-entraîner le modèle (Google Colab, GPU gratuit)
 
 1. pour réentrainer le modèle vous pouvez utiliser sur **colab.research.google.com** → nouveau notebook
 2. **Runtime → Change runtime type → GPU (T4)**
@@ -46,7 +46,7 @@ SolarLens_complet/
    (clique-droit dans le panneau fichiers de Colab → Download). L'environnement
    Colab est effacé à la fermeture, donc ne saute pas cette étape.
 
-## 🖥️ Étape 2 (optionnel) — Tester l'app Streamlit en local
+##  Étape 2 (optionnel) — Tester l'app Streamlit en local
 
 ```bash
 pip install -r requirements.txt
